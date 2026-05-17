@@ -65,6 +65,81 @@ function getFilteredStocks() {
   });
 }
 
+function metric(label, value) {
+  return `
+    <div>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+    </div>
+  `;
+}
+
+function renderMarketSummary() {
+  const stocks = debugStocks;
+
+  if (!stocks.length) {
+    $('debugSummaryCount').textContent = '--';
+    $('debugSummaryUpDown').textContent = '--';
+    $('debugSummaryStrongest').textContent = '--';
+    $('debugSummaryWeakest').textContent = '--';
+    $('debugSummaryPanic').textContent = '--';
+    $('debugSummaryHeat').textContent = '--';
+    $('debugSummaryBuy').textContent = '--';
+    $('debugSummarySell').textContent = '--';
+    return;
+  }
+
+  const upCount = stocks.filter((stock) => Number(stock.change || 0) > 0).length;
+  const downCount = stocks.filter((stock) => Number(stock.change || 0) < 0).length;
+
+  const strongest = [...stocks].sort((a, b) => {
+    return Number(b.change_pct || 0) - Number(a.change_pct || 0);
+  })[0];
+
+  const weakest = [...stocks].sort((a, b) => {
+    return Number(a.change_pct || 0) - Number(b.change_pct || 0);
+  })[0];
+
+  const totalPanic = stocks.reduce((sum, stock) => {
+    return sum + Number(stock.debug?.panicValue || 0);
+  }, 0);
+
+  const totalHeat = stocks.reduce((sum, stock) => {
+    return sum + Number(stock.debug?.heatValue || 0);
+  }, 0);
+
+  const totalBuy = stocks.reduce((sum, stock) => {
+    return sum + Number(stock.buy_value || 0);
+  }, 0);
+
+  const totalSell = stocks.reduce((sum, stock) => {
+    return sum + Number(stock.sell_value || 0);
+  }, 0);
+
+  const avgPanic = totalPanic / stocks.length;
+  const avgHeat = totalHeat / stocks.length;
+
+  $('debugSummaryCount').textContent = `${stocks.length} 檔`;
+  $('debugSummaryUpDown').textContent = `${upCount} / ${downCount}`;
+
+  $('debugSummaryStrongest').innerHTML = `
+    <span class="${changeClass(strongest.change_pct)}">
+      ${escapeHtml(strongest.symbol)} ${fmtPct(strongest.change_pct)}
+    </span>
+  `;
+
+  $('debugSummaryWeakest').innerHTML = `
+    <span class="${changeClass(weakest.change_pct)}">
+      ${escapeHtml(weakest.symbol)} ${fmtPct(weakest.change_pct)}
+    </span>
+  `;
+
+  $('debugSummaryPanic').textContent = fmtNumber(avgPanic, 1);
+  $('debugSummaryHeat').textContent = fmtNumber(avgHeat, 1);
+  $('debugSummaryBuy').textContent = fmtMoney(totalBuy);
+  $('debugSummarySell').textContent = fmtMoney(totalSell);
+}
+
 function renderStockList() {
   const list = getFilteredStocks();
 
@@ -99,15 +174,6 @@ function renderStockList() {
       renderDebugPage();
     });
   });
-}
-
-function metric(label, value) {
-  return `
-    <div>
-      <span>${escapeHtml(label)}</span>
-      <strong>${escapeHtml(value)}</strong>
-    </div>
-  `;
 }
 
 function renderSelectedStock(stock) {
@@ -198,6 +264,7 @@ function renderEmptySelected() {
 }
 
 function renderDebugPage() {
+  renderMarketSummary();
   renderStockList();
 
   const list = getFilteredStocks();
