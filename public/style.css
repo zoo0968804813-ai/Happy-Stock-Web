@@ -492,3 +492,40 @@ select:focus {
   font-weight: inherit;
   line-height: inherit;
 }
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.debug-login-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 999px;
+  color: var(--text);
+  text-decoration: none;
+  border: 1px solid rgba(130, 170, 255, 0.35);
+  background: rgba(80, 120, 255, 0.16);
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 0 18px rgba(90, 120, 255, 0.18);
+}
+
+.debug-login-btn:hover {
+  background: rgba(100, 145, 255, 0.24);
+}
+
+@media (max-width: 768px) {
+  .hero-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .debug-login-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
