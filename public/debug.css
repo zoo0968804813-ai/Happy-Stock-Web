@@ -1,38 +1,46 @@
 .debug-shell {
-  width: min(1440px, calc(100% - 32px));
+  width: min(1500px, calc(100% - 32px));
   margin: 0 auto;
   padding: 28px 0 48px;
 }
 
-.debug-hero {
+.debug-topbar {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
-  padding: 24px;
-  border: 1px solid rgba(120, 160, 255, 0.24);
-  border-radius: 24px;
-  background: rgba(10, 18, 34, 0.78);
-  box-shadow: 0 0 30px rgba(90, 120, 255, 0.12);
-  margin-bottom: 18px;
+  gap: 24px;
+  margin-bottom: 20px;
 }
 
-.debug-toolbar {
+.debug-back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 999px;
+  color: var(--text);
+  text-decoration: none;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.78);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.debug-searchbar {
   display: flex;
   gap: 12px;
-  margin: 18px 0;
+  margin-bottom: 12px;
 }
 
-.debug-toolbar input {
+.debug-searchbar input {
   flex: 1;
-  min-width: 0;
 }
 
-.debug-toolbar button {
+.debug-searchbar button {
   padding: 12px 16px;
   border-radius: 14px;
-  border: 1px solid rgba(130, 170, 255, 0.35);
-  background: rgba(80, 120, 255, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.78);
   color: var(--text);
   font-weight: 800;
   cursor: pointer;
@@ -41,45 +49,136 @@
 .debug-status {
   color: var(--muted);
   margin-bottom: 14px;
+  font-size: 0.9rem;
 }
 
-.debug-grid {
+.debug-layout {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: 340px 1fr;
+  gap: 22px;
+  align-items: start;
 }
 
-.debug-stock-card {
-  padding: 18px;
-  border-radius: 22px;
-  border: 1px solid rgba(120, 160, 255, 0.2);
-  background: rgba(10, 18, 34, 0.78);
+.debug-sidebar,
+.debug-main-card,
+.debug-section-card {
+  border: 1px solid var(--card-border);
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+  border-radius: 24px;
 }
 
-.debug-stock-head {
+.debug-sidebar {
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 40px);
+  overflow: hidden;
+  padding: 16px;
+}
+
+.debug-sidebar-title {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 14px;
 }
 
-.debug-stock-head h2 {
+.debug-sidebar-title h2 {
   margin: 0;
-  font-size: 24px;
-  color: var(--text);
+  font-size: 1.15rem;
 }
 
-.debug-stock-head p {
-  margin: 4px 0 0;
+.debug-sidebar-title span {
   color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.debug-stock-list {
+  display: grid;
+  gap: 8px;
+  max-height: calc(100vh - 150px);
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.debug-stock-row {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(2, 6, 23, 0.26);
+  color: var(--text);
+  border-radius: 16px;
+  padding: 12px;
+  cursor: pointer;
+  transition: 0.18s ease;
+}
+
+.debug-stock-row:hover,
+.debug-stock-row.active {
+  border-color: rgba(139, 92, 246, 0.62);
+  background: rgba(139, 92, 246, 0.12);
+}
+
+.debug-stock-row strong,
+.debug-stock-row span {
+  display: block;
+}
+
+.debug-stock-row span,
+.debug-stock-row small {
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.debug-stock-row-price {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.debug-finance-page {
+  display: grid;
+  gap: 18px;
+}
+
+.debug-main-card,
+.debug-section-card {
+  padding: 22px;
+}
+
+.debug-stock-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.debug-stock-title-row h2 {
+  margin: 0 0 8px;
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  letter-spacing: -0.04em;
+}
+
+.debug-muted {
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0;
 }
 
 .debug-risk {
-  height: fit-content;
-  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 76px;
+  padding: 7px 12px;
   border-radius: 999px;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 0.78rem;
+  font-weight: 900;
+  white-space: nowrap;
 }
 
 .risk-normal {
@@ -102,50 +201,130 @@
   background: rgba(210, 90, 255, 0.2);
 }
 
-.debug-metrics {
+.debug-price-area {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 22px 0;
+}
+
+.debug-big-price {
+  font-size: clamp(3rem, 8vw, 5.8rem);
+  line-height: 0.95;
+  font-weight: 800;
+  letter-spacing: -0.08em;
+}
+
+.debug-change-text {
+  margin-top: 12px;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.debug-chart-placeholder {
+  position: relative;
+  overflow: hidden;
+  height: 260px;
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background:
+    linear-gradient(180deg, rgba(139, 92, 246, 0.12), rgba(6, 182, 212, 0.04)),
+    rgba(2, 6, 23, 0.26);
+}
+
+.debug-chart-placeholder p {
+  position: absolute;
+  left: 18px;
+  bottom: 14px;
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.debug-chart-line {
+  position: absolute;
+  inset: 28px 20px 44px;
+  border-bottom: 2px solid rgba(45, 212, 191, 0.75);
+  transform: skewY(-8deg);
+  box-shadow: 0 18px 40px rgba(45, 212, 191, 0.14);
+}
+
+.debug-chart-line::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -90px;
+  height: 90px;
+  background: linear-gradient(180deg, rgba(45, 212, 191, 0.18), transparent);
+}
+
+.debug-section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.debug-section-heading h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.debug-section-heading span {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.debug-overview-grid,
+.debug-emotion-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
 }
 
-.debug-metrics div,
-.debug-detail-table div {
-  padding: 10px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
+.debug-overview-grid div,
+.debug-emotion-grid div {
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(2, 6, 23, 0.26);
+  border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
-.debug-metrics span,
-.debug-detail-table span {
+.debug-overview-grid span,
+.debug-emotion-grid span {
   display: block;
   color: var(--muted);
-  font-size: 12px;
-  margin-bottom: 5px;
-}
-
-.debug-metrics strong,
-.debug-detail-table b {
-  color: var(--text);
-  font-size: 17px;
-}
-
-.debug-bars {
-  margin: 14px 0;
-}
-
-.debug-bar-row {
-  margin-top: 10px;
-}
-
-.debug-bar-row span {
-  display: block;
-  color: var(--muted);
-  font-size: 12px;
+  font-size: 0.8rem;
   margin-bottom: 6px;
 }
 
+.debug-overview-grid strong,
+.debug-emotion-grid strong {
+  font-size: 1rem;
+}
+
+.debug-pressure-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.debug-pressure-label {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.debug-pressure-label strong {
+  color: var(--text);
+}
+
 .debug-bar {
-  height: 9px;
+  height: 10px;
   border-radius: 999px;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.08);
@@ -153,76 +332,113 @@
 
 .debug-bar i {
   display: block;
+  width: 0%;
   height: 100%;
   border-radius: inherit;
   background: var(--up);
+  transition: width 0.25s ease;
 }
 
 .debug-bar.sell i {
   background: var(--down);
 }
 
-.debug-detail-table {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.debug-formula {
-  margin-top: 14px;
-  padding: 12px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
+.debug-formula-box {
   color: var(--muted);
 }
 
-.debug-formula summary {
+.debug-formula-box summary {
   cursor: pointer;
   color: var(--text);
-  font-weight: 800;
+  font-weight: 900;
 }
 
-.debug-formula p {
-  margin: 8px 0 0;
-  font-size: 13px;
+.debug-formula-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.debug-formula-list div {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(2, 6, 23, 0.26);
+}
+
+.debug-formula-list span {
+  color: var(--muted);
+}
+
+.debug-formula-list code {
+  color: var(--text);
+  white-space: normal;
+  word-break: break-word;
 }
 
 .debug-empty {
-  padding: 20px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.04);
+  padding: 18px;
   color: var(--muted);
+  text-align: center;
 }
 
-@media (max-width: 768px) {
-  .debug-shell {
-    width: min(100% - 20px, 100%);
-    padding-top: 12px;
-  }
-
-  .debug-hero {
-    flex-direction: column;
-    padding: 16px;
-    border-radius: 18px;
-  }
-
-  .debug-hero h1 {
-    font-size: 22px;
-  }
-
-  .debug-toolbar {
-    flex-direction: column;
-  }
-
-  .debug-grid {
+@media (max-width: 1000px) {
+  .debug-layout {
     grid-template-columns: 1fr;
   }
 
-  .debug-metrics {
-    grid-template-columns: repeat(2, 1fr);
+  .debug-sidebar {
+    position: static;
+    max-height: none;
   }
 
-  .debug-detail-table {
+  .debug-stock-list {
+    max-height: 360px;
+  }
+
+  .debug-overview-grid,
+  .debug-emotion-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .debug-shell {
+    width: min(100% - 20px, 1500px);
+    padding-top: 18px;
+  }
+
+  .debug-topbar,
+  .debug-stock-title-row,
+  .debug-searchbar {
+    flex-direction: column;
+  }
+
+  .debug-back-btn,
+  .debug-searchbar button {
+    width: 100%;
+  }
+
+  .debug-main-card,
+  .debug-section-card,
+  .debug-sidebar {
+    border-radius: 18px;
+    padding: 16px;
+  }
+
+  .debug-chart-placeholder {
+    height: 190px;
+  }
+
+  .debug-pressure-grid,
+  .debug-overview-grid,
+  .debug-emotion-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .debug-formula-list div {
+    grid-template-columns: 1fr;
   }
 }

@@ -9,24 +9,107 @@
 </head>
 <body>
   <div class="debug-shell">
-    <header class="debug-hero">
+    <header class="debug-topbar">
       <div>
-        <p class="eyebrow">DEBUG PANEL</p>
+        <p class="eyebrow">DEBUG FINANCE TERMINAL</p>
         <h1>快樂炒股人｜詳細數據面板</h1>
-        <p class="subtitle">只讀模式，用於觀察股價、恐慌值、熱度、買賣壓與公式計算。</p>
+        <p class="subtitle">只讀模式｜觀察股價、恐慌值、熱度、買賣壓與公式計算。</p>
       </div>
 
-      <a class="debug-login-btn" href="/">返回首頁</a>
+      <a class="debug-back-btn" href="/">返回首頁</a>
     </header>
 
-    <section class="debug-toolbar">
-      <input id="debugSearch" type="search" placeholder="搜尋股票代號或名稱..." />
+    <section class="debug-searchbar">
+      <input id="debugSearch" type="search" placeholder="搜尋股票代號、名稱、產業..." />
       <button id="debugRefreshBtn" type="button">重新整理</button>
     </section>
 
-    <section id="debugStatus" class="debug-status">載入中...</section>
+    <div id="debugStatus" class="debug-status">載入中...</div>
 
-    <section id="debugGrid" class="debug-grid"></section>
+    <main class="debug-layout">
+      <aside class="debug-sidebar">
+        <div class="debug-sidebar-title">
+          <h2>股票列表</h2>
+          <span id="debugStockCount">--</span>
+        </div>
+
+        <div id="debugStockList" class="debug-stock-list"></div>
+      </aside>
+
+      <section class="debug-finance-page">
+        <article class="debug-main-card">
+          <div class="debug-stock-title-row">
+            <div>
+              <p id="debugSector" class="eyebrow">--</p>
+              <h2 id="debugTitle">選擇一支股票</h2>
+              <p id="debugSubtitle" class="debug-muted">從左側列表選擇股票後，這裡會顯示詳細資訊。</p>
+            </div>
+
+            <span id="debugRiskBadge" class="debug-risk risk-normal">--</span>
+          </div>
+
+          <div class="debug-price-area">
+            <div>
+              <div id="debugPrice" class="debug-big-price">--</div>
+              <div id="debugChange" class="debug-change-text">--</div>
+              <div id="debugUpdateTime" class="debug-muted">--</div>
+            </div>
+          </div>
+
+          <div class="debug-chart-placeholder">
+            <div class="debug-chart-line"></div>
+            <p>圖表區預留｜下一步可接入 1D 即時圖與 30D K 線</p>
+          </div>
+        </article>
+
+        <section class="debug-section-card">
+          <div class="debug-section-heading">
+            <h3>Overview</h3>
+            <span>主要股價資料</span>
+          </div>
+
+          <div id="debugOverviewGrid" class="debug-overview-grid"></div>
+        </section>
+
+        <section class="debug-section-card">
+          <div class="debug-section-heading">
+            <h3>Market Pressure</h3>
+            <span>買賣壓與市場情緒</span>
+          </div>
+
+          <div class="debug-pressure-grid">
+            <div>
+              <div class="debug-pressure-label">
+                <span>買壓</span>
+                <strong id="debugBuyPressure">--</strong>
+              </div>
+              <div class="debug-bar">
+                <i id="debugBuyBar"></i>
+              </div>
+            </div>
+
+            <div>
+              <div class="debug-pressure-label">
+                <span>賣壓</span>
+                <strong id="debugSellPressure">--</strong>
+              </div>
+              <div class="debug-bar sell">
+                <i id="debugSellBar"></i>
+              </div>
+            </div>
+          </div>
+
+          <div id="debugEmotionGrid" class="debug-emotion-grid"></div>
+        </section>
+
+        <section class="debug-section-card">
+          <details class="debug-formula-box" open>
+            <summary>公式計算說明</summary>
+            <div id="debugFormulaList" class="debug-formula-list"></div>
+          </details>
+        </section>
+      </section>
+    </main>
   </div>
 
   <script src="/debug.js"></script>
