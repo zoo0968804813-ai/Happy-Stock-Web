@@ -1,0 +1,17 @@
+{
+  "name": "happy-stock-web",
+  "version": "1.0.0",
+  "description": "Happy Stock public dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.18.3",
+    "pg": "^8.13.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

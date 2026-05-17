@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>快樂炒股人｜股市看板</title>
+  <link rel="stylesheet" href="/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Happy Stock Terminal</p>
+        <h1>快樂炒股人｜股市看板</h1>
+        <p class="subtitle">公開查詢、即時圖表、K 線、法人籌碼與市場事件。交易操作請回 Discord BOT 完成。</p>
+      </div>
+      <div class="status-card">
+        <span class="pulse"></span>
+        <div>
+          <div class="status-title">資料讀取中</div>
+          <div id="lastUpdated" class="status-subtitle">--</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="summary-grid">
+      <article class="metric-card">
+        <span>股票數</span>
+        <strong id="stockCount">--</strong>
+      </article>
+      <article class="metric-card">
+        <span>總市值</span>
+        <strong id="marketCap">--</strong>
+      </article>
+      <article class="metric-card up">
+        <span>上漲 / 下跌</span>
+        <strong id="upDownCount">--</strong>
+      </article>
+      <article class="metric-card">
+        <span>最強 / 最弱</span>
+        <strong id="strongWeak">--</strong>
+      </article>
+    </section>
+
+    <main class="dashboard">
+      <aside class="stock-panel card">
+        <div class="panel-heading">
+          <div>
+            <h2>股票列表</h2>
+            <p>搜尋、排序、切換個股</p>
+          </div>
+        </div>
+
+        <div class="controls">
+          <input id="searchInput" type="search" placeholder="搜尋代號、名稱、產業..." />
+          <select id="sortSelect">
+            <option value="change_desc">漲幅高到低</option>
+            <option value="change_asc">跌幅高到低</option>
+            <option value="symbol_asc">代號 A-Z</option>
+            <option value="volume_desc">成交量高到低</option>
+            <option value="price_desc">價格高到低</option>
+          </select>
+        </div>
+
+        <div id="stockList" class="stock-list"></div>
+      </aside>
+
+      <section class="main-panel">
+        <article class="card stock-detail">
+          <div class="detail-header">
+            <div>
+              <p id="detailSector" class="eyebrow">--</p>
+              <h2 id="detailTitle">選擇一支股票</h2>
+              <p id="detailDescription">從左側股票列表選擇股票後，這裡會顯示詳細資訊。</p>
+            </div>
+            <div class="price-box">
+              <span>現價</span>
+              <strong id="detailPrice">--</strong>
+              <small id="detailChange">--</small>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div><span>開盤</span><strong id="detailOpen">--</strong></div>
+            <div><span>最高</span><strong id="detailHigh">--</strong></div>
+            <div><span>最低</span><strong id="detailLow">--</strong></div>
+            <div><span>合理價</span><strong id="detailFair">--</strong></div>
+            <div><span>成交量</span><strong id="detailVolume">--</strong></div>
+            <div><span>漲跌限制</span><strong id="detailLimit">--</strong></div>
+          </div>
+        </article>
+
+        <article class="card chart-card">
+          <div class="tabs">
+            <button class="tab active" data-chart="intraday">單日即時圖</button>
+            <button class="tab" data-chart="candles">30 日 K 線</button>
+            <button class="tab" data-chart="compare">多股比較</button>
+          </div>
+
+          <div id="intradayPanel" class="chart-panel">
+            <canvas id="intradayChart"></canvas>
+          </div>
+
+          <div id="candlesPanel" class="chart-panel hidden">
+            <canvas id="candlesCanvas" width="960" height="420"></canvas>
+          </div>
+
+          <div id="comparePanel" class="chart-panel hidden">
+            <div class="compare-tools">
+              <p>勾選左側股票卡右上角「比較」後，會以近 24 小時百分比變化進行比較。</p>
+            </div>
+            <canvas id="compareChart"></canvas>
+          </div>
+        </article>
+
+        <section class="two-column">
+          <article class="card">
+            <h3>法人籌碼</h3>
+            <div id="flowBox" class="data-list">--</div>
+          </article>
+
+          <article class="card">
+            <h3>持有人 / 股利</h3>
+            <div id="holderDividendBox" class="data-list">--</div>
+          </article>
+        </section>
+
+        <section class="two-column">
+          <article class="card">
+            <h3>融資上市資訊</h3>
+            <div id="listingBox" class="data-list">--</div>
+          </article>
+
+          <article class="card">
+            <h3>最新事件</h3>
+            <div id="newsBox" class="news-list">讀取中...</div>
+          </article>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
