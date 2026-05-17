@@ -270,6 +270,120 @@ app.get('/api/debug/market', requireDebugAuth, async (req, res) => {
   }
 });
 
+app.get('/api/debug/market', requireDebugAuth, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      WITH today_volume AS (
+        SELECT
+          symbol,
+          COALESCE(SUM(amount), 0) AS volume,
+          COALESCE(SUM(CASE WHEN side IN ('BUY', 'COVER') THEN total_value ELSE 0 END), 0) AS buy_value,
+          COALESCE(SUM(CASE WHEN side IN ('SELL', 'SHORT') THEN total_value ELSE 0 END), 0) AS sell_value,
+          COUNT(*)::int AS trade_count
+        FROM stock_trades
+        WHERE TO_CHAR(created_at AT TIME ZONE 'Asia/Taipei', 'YYYY-MM-DD') = ${todayTaipeiSqlExpr()}
+        GROUP BY symbol
+      )
+      SELECT
+        s.symbol,
+        s.name,
+        s.sector,
+        s.price::float AS price,
+        s.previous_close::float AS previous_close,
+        s.open_price::float AS open_price,
+        s.high_price::float AS high_price,
+        s.low_price::float AS low_price,
+        s.fair_price::float AS fair_price,
+        s.market_cap::float AS market_cap,
+        s.total_shares::bigint AS total_shares,
+        s.daily_limit_pct::float AS daily_limit_pct,
+        s.status,
+        s.updated_at,
+        COALESCE(tv.volume, 0)::bigint AS today_volume,
+        COALESCE(tv.buy_value, 0)::float AS buy_value,
+        COALESCE(tv.sell_value, 0)::float AS sell_value,
+        COALESCE(tv.trade_count, 0)::int AS trade_count,
+        CASE
+          WHEN s.open_price > 0 THEN ((s.price - s.open_price) / s.open_price) * 100
+          ELSE 0
+        END::float AS change_pct,
+        (s.price - s.open_price)::float AS change
+      FROM stocks s
+      LEFT JOIN today_volume tv ON tv.symbol = s.symbol
+      ORDER BY s.symbol ASC;
+    `);
+
+    const stocks = result.rows.map((stock) => {
+      const price = Number(stock.price || 0);
+      const openPrice = Number(stock.open_price || 0);
+      const highPrice = Number(stock.high_price || 0);
+      const lowPrice = Number(stock.low_price || 0);
+      const fairPrice = Number(stock.fair_price || 0);
+      const buyValue = Number(stock.buy_value || 0);
+      const sellValue = Number(stock.sell_value || 0);
+      const tradeCount = Number(stock.trade_count || 0);
+      const changePct = Number(stock.change_pct || 0);
+
+      const pressureTotal = buyValue + sellValue;
+      const buyPressurePct = pressureTotal > 0 ? (buyValue / pressureTotal) * 100 : 50;
+      const sellPressurePct = pressureTotal > 0 ? (sellValue / pressureTotal) * 100 : 50;
+      const pressureDiff = buyValue - sellValue;
+
+      const priceToFairPct = fairPrice > 0 ? ((price - fairPrice) / fairPrice) * 100 : 0;
+      const intradayRangePct = openPrice > 0 ? ((highPrice - lowPrice) / openPrice) * 100 : 0;
+
+      const panicValue = Math.min(100, Math.max(0,
+        Math.abs(Math.min(changePct, 0)) * 3
+        + sellPressurePct * 0.35
+        + Math.max(priceToFairPct, 0) * 0.8
+        + intradayRangePct * 1.2
+      ));
+
+      const heatValue = Math.min(100, Math.max(0,
+        tradeCount * 4
+        + Math.abs(changePct) * 2
+        + Math.min(pressureTotal / 10000, 40)
+      ));
+
+      let riskLabel = '正常';
+      if (panicValue >= 75) riskLabel = '高度恐慌';
+      else if (panicValue >= 50) riskLabel = '偏恐慌';
+      else if (heatValue >= 75) riskLabel = '高度熱門';
+      else if (Math.abs(changePct) >= 10) riskLabel = '高波動';
+
+      return {
+        ...stock,
+        debug: {
+          buyPressurePct,
+          sellPressurePct,
+          pressureDiff,
+          priceToFairPct,
+          intradayRangePct,
+          panicValue,
+          heatValue,
+          riskLabel,
+          formulas: {
+            changePct: '((price - open_price) / open_price) * 100',
+            buyPressurePct: 'buy_value / (buy_value + sell_value) * 100',
+            sellPressurePct: 'sell_value / (buy_value + sell_value) * 100',
+            priceToFairPct: '((price - fair_price) / fair_price) * 100',
+            intradayRangePct: '((high_price - low_price) / open_price) * 100',
+            panicValue: '跌幅壓力 + 賣壓 + 高估壓力 + 盤中震盪',
+            heatValue: '交易次數 + 漲跌幅波動 + 成交金額'
+          }
+        }
+      };
+    });
+
+    res.json({
+      serverTime: new Date().toISOString(),
+      stocks
+    });
+  } catch (err) {
+    handleError(res, 'GET /api/debug/market', err);
+  }
+});
+
 app.get('/api/stocks/:symbol', async (req, res) => {
   const symbol = safeSymbol(req.params.symbol);
 

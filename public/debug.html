@@ -5,47 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>快樂炒股人｜Debug 面板</title>
   <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/debug.css" />
 </head>
 <body>
-  <div class="app-shell">
-    <header class="hero">
+  <div class="debug-shell">
+    <header class="debug-hero">
       <div>
         <p class="eyebrow">DEBUG PANEL</p>
-        <h1>快樂炒股人｜Debug 面板</h1>
-        <p class="subtitle">如果你看到這個畫面，代表 /debug 頁面已成功載入。</p>
+        <h1>快樂炒股人｜詳細數據面板</h1>
+        <p class="subtitle">只讀模式，用於觀察股價、恐慌值、熱度、買賣壓與公式計算。</p>
       </div>
 
       <a class="debug-login-btn" href="/">返回首頁</a>
     </header>
 
-    <section class="summary-grid">
-      <article class="metric-card">
-        <span>狀態</span>
-        <strong>已登入</strong>
-      </article>
-
-      <article class="metric-card">
-        <span>模式</span>
-        <strong>只讀 Debug</strong>
-      </article>
-
-      <article class="metric-card">
-        <span>資料來源</span>
-        <strong>PostgreSQL</strong>
-      </article>
-
-      <article class="metric-card">
-        <span>API</span>
-        <strong>GET Only</strong>
-      </article>
+    <section class="debug-toolbar">
+      <input id="debugSearch" type="search" placeholder="搜尋股票代號或名稱..." />
+      <button id="debugRefreshBtn" type="button">重新整理</button>
     </section>
 
-    <article class="card">
-      <h2>Debug 頁面測試成功</h2>
-      <p class="subtitle">
-        下一步可以再加入股票詳細資訊、恐慌值、買賣壓、公式計算與市場觀察面板。
-      </p>
-    </article>
+    <section id="debugStatus" class="debug-status">載入中...</section>
+
+    <section id="debugGrid" class="debug-grid"></section>
   </div>
+
+  <script src="/debug.js"></script>
 </body>
 </html>

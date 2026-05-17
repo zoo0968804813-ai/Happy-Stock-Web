@@ -1,0 +1,228 @@
+.debug-shell {
+  width: min(1440px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 48px;
+}
+
+.debug-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid rgba(120, 160, 255, 0.24);
+  border-radius: 24px;
+  background: rgba(10, 18, 34, 0.78);
+  box-shadow: 0 0 30px rgba(90, 120, 255, 0.12);
+  margin-bottom: 18px;
+}
+
+.debug-toolbar {
+  display: flex;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.debug-toolbar input {
+  flex: 1;
+  min-width: 0;
+}
+
+.debug-toolbar button {
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(130, 170, 255, 0.35);
+  background: rgba(80, 120, 255, 0.18);
+  color: var(--text);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.debug-status {
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.debug-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.debug-stock-card {
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(120, 160, 255, 0.2);
+  background: rgba(10, 18, 34, 0.78);
+}
+
+.debug-stock-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.debug-stock-head h2 {
+  margin: 0;
+  font-size: 24px;
+  color: var(--text);
+}
+
+.debug-stock-head p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.debug-risk {
+  height: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.risk-normal {
+  color: #dbe7ff;
+  background: rgba(120, 160, 255, 0.16);
+}
+
+.risk-warning {
+  color: #ffe6a3;
+  background: rgba(255, 190, 80, 0.18);
+}
+
+.risk-danger {
+  color: #ffd0d0;
+  background: rgba(255, 80, 100, 0.22);
+}
+
+.risk-hot {
+  color: #ffd6ff;
+  background: rgba(210, 90, 255, 0.2);
+}
+
+.debug-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.debug-metrics div,
+.debug-detail-table div {
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.debug-metrics span,
+.debug-detail-table span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.debug-metrics strong,
+.debug-detail-table b {
+  color: var(--text);
+  font-size: 17px;
+}
+
+.debug-bars {
+  margin: 14px 0;
+}
+
+.debug-bar-row {
+  margin-top: 10px;
+}
+
+.debug-bar-row span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.debug-bar {
+  height: 9px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.debug-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--up);
+}
+
+.debug-bar.sell i {
+  background: var(--down);
+}
+
+.debug-detail-table {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.debug-formula {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+}
+
+.debug-formula summary {
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.debug-formula p {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+
+.debug-empty {
+  padding: 20px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+}
+
+@media (max-width: 768px) {
+  .debug-shell {
+    width: min(100% - 20px, 100%);
+    padding-top: 12px;
+  }
+
+  .debug-hero {
+    flex-direction: column;
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .debug-hero h1 {
+    font-size: 22px;
+  }
+
+  .debug-toolbar {
+    flex-direction: column;
+  }
+
+  .debug-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .debug-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .debug-detail-table {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
