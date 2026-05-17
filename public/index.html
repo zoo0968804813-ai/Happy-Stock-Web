@@ -75,32 +75,41 @@
         <article class="card stock-detail">
           <div class="detail-header">
             <div>
-              <p id="detailSector" class="eyebrow">--</p>
-              <h2 id="detailTitle">選擇一支股票</h2>
-              <p id="detailDescription">從左側股票列表選擇股票後，這裡會顯示詳細資訊。</p>
-            </div>
-            <div class="price-box">
-              <span>現價</span>
-              <strong id="detailPrice">--</strong>
-              <small id="detailChange">--</small>
-            </div>
-          </div>
+              <article class="card stock-detail finance-detail">
+                <div class="finance-detail-top">
+                  <div class="finance-title-block">
+                    <p id="detailSector" class="eyebrow">--</p>
+                    <h2 id="detailTitle">選擇一支股票</h2>
+                    <p id="detailDescription" class="finance-description">從左側股票列表選擇股票後，這裡會顯示詳細資訊。</p>
+                  </div>
 
-          <div class="info-grid">
-            <div><span>開盤</span><strong id="detailOpen">--</strong></div>
-            <div><span>最高</span><strong id="detailHigh">--</strong></div>
-            <div><span>最低</span><strong id="detailLow">--</strong></div>
-            <div><span>合理價</span><strong id="detailFair">--</strong></div>
-            <div><span>成交量</span><strong id="detailVolume">--</strong></div>
-            <div><span>漲跌限制</span><strong id="detailLimit">--</strong></div>
-          </div>
-        </article>
+                  <div class="finance-price-block">
+                    <span>現價</span>
+                    <strong id="detailPrice">--</strong>
+                    <small id="detailChange">--</small>
+                  </div>
+                </div>
+
+                <div class="finance-overview-title">
+                  <h3>Overview</h3>
+                  <span>主要股價資料</span>
+                </div>
+
+                <div class="info-grid finance-overview-grid">
+                  <div><span>開盤</span><strong id="detailOpen">--</strong></div>
+                  <div><span>最高</span><strong id="detailHigh">--</strong></div>
+                  <div><span>最低</span><strong id="detailLow">--</strong></div>
+                  <div><span>合理價</span><strong id="detailFair">--</strong></div>
+                  <div><span>成交量</span><strong id="detailVolume">--</strong></div>
+                  <div><span>漲跌限制</span><strong id="detailLimit">--</strong></div>
+                </div>
+              </article>
 
         <article class="card chart-card">
-          <div class="tabs">
-            <button class="tab active" data-chart="intraday">單日即時圖</button>
-            <button class="tab" data-chart="candles">30 日 K 線</button>
-            <button class="tab" data-chart="compare">多股比較</button>
+          <div class="tabs finance-tabs">
+            <button class="tab active" data-chart="intraday">1D 即時</button>
+            <button class="tab" data-chart="candles">30D K 線</button>
+            <button class="tab" data-chart="compare">比較</button>
           </div>
 
           <div id="intradayPanel" class="chart-panel">

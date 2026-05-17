@@ -529,3 +529,159 @@ select:focus {
     font-size: 13px;
   }
 }
+
+/* ===== Google Finance style homepage stock detail ===== */
+
+.finance-detail {
+  padding: 26px;
+}
+
+.finance-detail-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 28px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+
+.finance-title-block h2 {
+  margin: 0 0 10px;
+  font-size: clamp(2rem, 4vw, 3.8rem);
+  line-height: 1.05;
+  letter-spacing: -0.06em;
+}
+
+.finance-description {
+  max-width: 760px;
+  color: var(--muted);
+  line-height: 1.75;
+  margin: 0;
+}
+
+.finance-price-block {
+  min-width: 220px;
+  text-align: right;
+}
+
+.finance-price-block span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.86rem;
+  margin-bottom: 6px;
+}
+
+.finance-price-block strong {
+  display: block;
+  color: var(--text);
+  font-size: clamp(3rem, 7vw, 5.8rem);
+  line-height: 0.95;
+  font-weight: 850;
+  letter-spacing: -0.08em;
+}
+
+.finance-price-block small {
+  display: block;
+  margin-top: 12px;
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.finance-overview-title {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0 14px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.finance-overview-title h3 {
+  margin: 0;
+  font-size: 1.18rem;
+}
+
+.finance-overview-title span {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.finance-overview-grid {
+  grid-template-columns: repeat(6, 1fr);
+  margin-top: 0;
+}
+
+.finance-overview-grid div {
+  background: rgba(2, 6, 23, 0.22);
+}
+
+.finance-overview-grid span {
+  font-size: 0.78rem;
+}
+
+.finance-overview-grid strong {
+  font-size: 1.05rem;
+}
+
+.finance-tabs {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  padding-bottom: 12px;
+}
+
+.finance-tabs .tab {
+  padding: 8px 14px;
+  font-weight: 800;
+}
+
+/* 手機版：一般用戶首頁更像 Google 財經手機版 */
+@media (max-width: 720px) {
+  .finance-detail {
+    padding: 18px;
+  }
+
+  .finance-detail-top {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .finance-title-block h2 {
+    font-size: 2rem;
+  }
+
+  .finance-description {
+    font-size: 0.92rem;
+  }
+
+  .finance-price-block {
+    width: 100%;
+    text-align: left;
+  }
+
+  .finance-price-block strong {
+    font-size: 4rem;
+  }
+
+  .finance-price-block small {
+    font-size: 1rem;
+  }
+
+  .finance-overview-title {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .finance-overview-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .finance-tabs {
+    gap: 8px;
+  }
+
+  .finance-tabs .tab {
+    flex: 1;
+    padding: 9px 8px;
+    font-size: 0.86rem;
+  }
+}
