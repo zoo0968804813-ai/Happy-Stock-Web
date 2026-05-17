@@ -6,6 +6,7 @@
   <title>快樂炒股人｜Debug 面板</title>
   <link rel="stylesheet" href="/style.css" />
   <link rel="stylesheet" href="/debug.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <div class="debug-shell">
@@ -56,9 +57,13 @@
             </div>
           </div>
 
-          <div class="debug-chart-placeholder">
-            <div class="debug-chart-line"></div>
-            <p>圖表區預留｜下一步可接入 1D 即時圖與 30D K 線</p>
+          <div class="debug-chart-box">
+            <div class="debug-chart-tabs">
+              <button class="debug-chart-tab active" type="button" data-debug-chart="intraday">1D 即時</button>
+              <button class="debug-chart-tab" type="button" data-debug-chart="candles">30D 收盤</button>
+            </div>
+
+            <canvas id="debugPriceChart"></canvas>
           </div>
         </article>
 

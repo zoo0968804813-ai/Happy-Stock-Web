@@ -2,6 +2,8 @@ const $ = (id) => document.getElementById(id);
 
 let debugStocks = [];
 let selectedSymbol = null;
+let debugChartMode = 'intraday';
+let debugPriceChart = null;
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -177,6 +179,8 @@ function renderSelectedStock(stock) {
       </div>
     `;
   }).join('');
+
+  loadDebugChart(stock.symbol);
 }
 
 function renderEmptySelected() {
@@ -212,6 +216,137 @@ function renderDebugPage() {
   selectedSymbol = stock.symbol;
   renderSelectedStock(stock);
   renderStockList();
+}
+
+function destroyDebugChart() {
+  if (debugPriceChart) {
+    debugPriceChart.destroy();
+    debugPriceChart = null;
+  }
+}
+
+function renderDebugChart(labels, prices, labelText) {
+  const canvas = $('debugPriceChart');
+  if (!canvas) return;
+
+  destroyDebugChart();
+
+  const ctx = canvas.getContext('2d');
+
+  debugPriceChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: labelText,
+          data: prices,
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.28,
+          fill: true
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            label(context) {
+              return `價格：${fmtNumber(context.parsed.y)}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: '#94a3b8',
+            maxTicksLimit: 6
+          },
+          grid: {
+            color: 'rgba(148, 163, 184, 0.08)'
+          }
+        },
+        y: {
+          ticks: {
+            color: '#94a3b8',
+            callback(value) {
+              return fmtNumber(value);
+            }
+          },
+          grid: {
+            color: 'rgba(148, 163, 184, 0.08)'
+          }
+        }
+      }
+    }
+  });
+}
+
+async function loadDebugChart(symbol) {
+  if (!symbol) return;
+
+  try {
+    const endpoint = debugChartMode === 'candles'
+      ? `/api/stocks/${encodeURIComponent(symbol)}/candles`
+      : `/api/stocks/${encodeURIComponent(symbol)}/intraday`;
+
+    const res = await fetch(endpoint);
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    if (debugChartMode === 'candles') {
+      const candles = data.candles || [];
+
+      const labels = candles.map((item) => {
+        return new Date(item.open_time).toLocaleDateString('zh-TW', {
+          month: '2-digit',
+          day: '2-digit'
+        });
+      });
+
+      const prices = candles.map((item) => Number(item.close || 0));
+
+      renderDebugChart(labels, prices, `${symbol} 30D 收盤`);
+      return;
+    }
+
+    const points = data.points || [];
+
+    const labels = points.map((item) => {
+      return new Date(item.created_at).toLocaleTimeString('zh-TW', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    });
+
+    const prices = points.map((item) => Number(item.price || 0));
+
+    if (!points.length && Number(data.currentPrice || 0) > 0) {
+      renderDebugChart(['目前'], [Number(data.currentPrice)], `${symbol} 1D 即時`);
+      return;
+    }
+
+    renderDebugChart(labels, prices, `${symbol} 1D 即時`);
+  } catch (err) {
+    destroyDebugChart();
+    console.error('loadDebugChart failed:', err);
+  }
 }
 
 async function loadDebugMarket() {
@@ -252,5 +387,19 @@ $('debugSearch').addEventListener('input', () => {
 });
 
 $('debugRefreshBtn').addEventListener('click', loadDebugMarket);
+
+document.querySelectorAll('.debug-chart-tab').forEach((button) => {
+  button.addEventListener('click', () => {
+    debugChartMode = button.dataset.debugChart;
+
+    document.querySelectorAll('.debug-chart-tab').forEach((item) => {
+      item.classList.toggle('active', item === button);
+    });
+
+    if (selectedSymbol) {
+      loadDebugChart(selectedSymbol);
+    }
+  });
+});
 
 loadDebugMarket();
