@@ -153,18 +153,27 @@ function renderStockList() {
   $('debugStockList').innerHTML = list.map((stock) => {
     const active = stock.symbol === selectedSymbol ? 'active' : '';
     const stockChangeClass = changeClass(stock.change_pct);
+    const statusText = stock.debug?.statusText || '目前沒有足夠資料判斷本次股價變動原因。';
 
     return `
-      <button class="debug-stock-row ${active}" type="button" data-symbol="${escapeHtml(stock.symbol)}">
-        <div>
-          <strong>${escapeHtml(stock.symbol)}</strong>
-          <span>${escapeHtml(stock.name || '-')}</span>
-        </div>
-        <div class="debug-stock-row-price">
-          <b>${fmtNumber(stock.price)}</b>
-          <small class="${stockChangeClass}">${fmtPct(stock.change_pct)}</small>
-        </div>
-      </button>
+      <article class="debug-stock-item ${active}">
+        <button class="debug-stock-row" type="button" data-symbol="${escapeHtml(stock.symbol)}">
+          <div>
+            <strong>${escapeHtml(stock.symbol)}</strong>
+            <span>${escapeHtml(stock.name || '-')}</span>
+          </div>
+
+          <div class="debug-stock-row-price">
+            <b>${fmtNumber(stock.price)}</b>
+            <small class="${stockChangeClass}">${fmtPct(stock.change_pct)}</small>
+          </div>
+        </button>
+
+        <details class="debug-stock-reason">
+          <summary>展開狀態分析</summary>
+          <p>${escapeHtml(statusText)}</p>
+        </details>
+      </article>
     `;
   }).join('');
 

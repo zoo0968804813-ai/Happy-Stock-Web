@@ -40,6 +40,127 @@ function handleError(res, label, err) {
   });
 }
 
+function fmtDebugMoney(value) {
+  return Number(value || 0).toLocaleString('zh-TW', {
+    maximumFractionDigits: 0,
+  });
+}
+
+function fmtDebugPct(value) {
+  const num = Number(value || 0);
+  return `${num >= 0 ? '+' : ''}${num.toFixed(2)}%`;
+}
+
+function getTradeSideLabel(side) {
+  const map = {
+    BUY: '買入',
+    SELL: '賣出',
+    SHORT: '做空',
+    COVER: '平倉買回',
+  };
+
+  return map[side] || side || '交易';
+}
+
+function summarizeTopTrader(trades, sides) {
+  const traderMap = new Map();
+
+  for (const trade of trades) {
+    if (!sides.includes(trade.side)) continue;
+
+    const key = trade.user_id || trade.username || 'UNKNOWN';
+
+    const current = traderMap.get(key) || {
+      username: trade.username || trade.user_id || '未知玩家',
+      totalValue: 0,
+      amount: 0,
+      sides: new Set(),
+    };
+
+    current.totalValue += Number(trade.total_value || 0);
+    current.amount += Number(trade.amount || 0);
+    current.sides.add(getTradeSideLabel(trade.side));
+
+    traderMap.set(key, current);
+  }
+
+  return [...traderMap.values()].sort((a, b) => b.totalValue - a.totalValue)[0] || null;
+}
+
+function buildStockStatusText(stock, debug, recentTrades) {
+  const symbol = stock.symbol;
+  const change = Number(stock.change || 0);
+  const changePct = Number(stock.change_pct || 0);
+
+  const buyValue = Number(stock.buy_value || 0);
+  const sellValue = Number(stock.sell_value || 0);
+  const pressureDiff = Number(debug.pressureDiff || 0);
+
+  const panicValue = Number(debug.panicValue || 0);
+  const heatValue = Number(debug.heatValue || 0);
+
+  const recentBuyValue = recentTrades
+    .filter((trade) => ['BUY', 'COVER'].includes(trade.side))
+    .reduce((sum, trade) => sum + Number(trade.total_value || 0), 0);
+
+  const recentSellValue = recentTrades
+    .filter((trade) => ['SELL', 'SHORT'].includes(trade.side))
+    .reduce((sum, trade) => sum + Number(trade.total_value || 0), 0);
+
+  const topBuyer = summarizeTopTrader(recentTrades, ['BUY', 'COVER']);
+  const topSeller = summarizeTopTrader(recentTrades, ['SELL', 'SHORT']);
+
+  const directionText = change > 0
+    ? `目前上漲 ${fmtDebugPct(changePct)}`
+    : change < 0
+      ? `目前下跌 ${fmtDebugPct(changePct)}`
+      : '目前價格持平';
+
+  const reasons = [];
+
+  if (recentBuyValue > recentSellValue) {
+    reasons.push(`近 10 分鐘買壓較強，買入與平倉買回金額約 ${fmtDebugMoney(recentBuyValue)}，高於賣出與做空金額 ${fmtDebugMoney(recentSellValue)}`);
+  } else if (recentSellValue > recentBuyValue) {
+    reasons.push(`近 10 分鐘賣壓較強，賣出與做空金額約 ${fmtDebugMoney(recentSellValue)}，高於買入與平倉買回金額 ${fmtDebugMoney(recentBuyValue)}`);
+  } else {
+    reasons.push('近 10 分鐘買賣力道接近，價格主要受到前面累積交易與系統更新影響');
+  }
+
+  if (buyValue > sellValue) {
+    reasons.push(`今日累積買壓大於賣壓，買賣壓差約 +${fmtDebugMoney(Math.abs(pressureDiff))}`);
+  } else if (sellValue > buyValue) {
+    reasons.push(`今日累積賣壓大於買壓，買賣壓差約 -${fmtDebugMoney(Math.abs(pressureDiff))}`);
+  } else {
+    reasons.push('今日累積買賣壓接近，市場暫時沒有明顯單邊方向');
+  }
+
+  if (topBuyer) {
+    reasons.push(`${topBuyer.username} 近 10 分鐘主要進行 ${[...topBuyer.sides].join(' / ')}，合計約 ${fmtDebugMoney(topBuyer.totalValue)}`);
+  }
+
+  if (topSeller) {
+    reasons.push(`${topSeller.username} 近 10 分鐘主要進行 ${[...topSeller.sides].join(' / ')}，合計約 ${fmtDebugMoney(topSeller.totalValue)}`);
+  }
+
+  if (panicValue >= 75) {
+    reasons.push(`恐慌值 ${panicValue.toFixed(1)} 偏高，代表跌幅、賣壓或盤中震盪正在放大，容易造成追殺或恐慌賣出`);
+  } else if (panicValue >= 50) {
+    reasons.push(`恐慌值 ${panicValue.toFixed(1)} 中高，代表市場有明顯不安，賣壓更容易影響價格`);
+  } else {
+    reasons.push(`恐慌值 ${panicValue.toFixed(1)} 不高，這次價格變動比較不像恐慌拋售造成`);
+  }
+
+  if (heatValue >= 75) {
+    reasons.push(`熱度值 ${heatValue.toFixed(1)} 偏高，代表交易活躍，價格更容易被玩家買賣推動`);
+  } else if (heatValue >= 45) {
+    reasons.push(`熱度值 ${heatValue.toFixed(1)} 中等，代表市場有一定交易量，但還不是極端熱門`);
+  } else {
+    reasons.push(`熱度值 ${heatValue.toFixed(1)} 偏低，代表目前交易不算活躍`);
+  }
+
+  return `${symbol} ${directionText}。${reasons.join('；')}。`;
+}
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 function requireDebugAuth(req, res, next) {
@@ -199,6 +320,30 @@ app.get('/api/debug/market', requireDebugAuth, async (req, res) => {
       ORDER BY s.symbol ASC;
     `);
 
+    const recentTradesRes = await pool.query(`
+      SELECT
+        symbol,
+        user_id,
+        username,
+        side,
+        amount::bigint AS amount,
+        price::float AS price,
+        total_value::float AS total_value,
+        created_at
+      FROM stock_trades
+      WHERE created_at >= NOW() - INTERVAL '10 minutes'
+      ORDER BY created_at DESC
+      LIMIT 300;
+    `);
+
+    const recentTradesBySymbol = new Map();
+
+    for (const trade of recentTradesRes.rows) {
+      const list = recentTradesBySymbol.get(trade.symbol) || [];
+      list.push(trade);
+      recentTradesBySymbol.set(trade.symbol, list);
+    }
+
     const stocks = result.rows.map((stock) => {
       const price = Number(stock.price || 0);
       const openPrice = Number(stock.open_price || 0);
@@ -237,6 +382,19 @@ app.get('/api/debug/market', requireDebugAuth, async (req, res) => {
       else if (heatValue >= 75) riskLabel = '高度熱門';
       else if (Math.abs(changePct) >= 10) riskLabel = '高波動';
 
+      const recentTrades = recentTradesBySymbol.get(stock.symbol) || [];
+
+      const statusText = buildStockStatusText(stock, {
+        buyPressurePct,
+        sellPressurePct,
+        pressureDiff,
+        priceToFairPct,
+        intradayRangePct,
+        panicValue,
+        heatValue,
+        riskLabel,
+      }, recentTrades);
+
       return {
         ...stock,
         debug: {
@@ -248,6 +406,8 @@ app.get('/api/debug/market', requireDebugAuth, async (req, res) => {
           panicValue,
           heatValue,
           riskLabel,
+          statusText,
+          recentTrades: recentTrades.slice(0, 8),
           formulas: {
             changePct: '((price - open_price) / open_price) * 100',
             buyPressurePct: 'buy_value / (buy_value + sell_value) * 100',

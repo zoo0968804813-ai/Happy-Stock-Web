@@ -132,25 +132,32 @@
   padding-right: 4px;
 }
 
+.debug-stock-item {
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(2, 6, 23, 0.26);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: 0.18s ease;
+}
+
+.debug-stock-item:hover,
+.debug-stock-item.active {
+  border-color: rgba(139, 92, 246, 0.62);
+  background: rgba(139, 92, 246, 0.12);
+}
+
 .debug-stock-row {
   width: 100%;
   display: flex;
   justify-content: space-between;
   gap: 12px;
   text-align: left;
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  background: rgba(2, 6, 23, 0.26);
+  border: 0;
+  background: transparent;
   color: var(--text);
-  border-radius: 16px;
   padding: 12px;
   cursor: pointer;
   transition: 0.18s ease;
-}
-
-.debug-stock-row:hover,
-.debug-stock-row.active {
-  border-color: rgba(139, 92, 246, 0.62);
-  background: rgba(139, 92, 246, 0.12);
 }
 
 .debug-stock-row strong,
@@ -167,6 +174,42 @@
 .debug-stock-row-price {
   text-align: right;
   white-space: nowrap;
+}
+
+.debug-stock-reason {
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  padding: 0 12px 12px;
+}
+
+.debug-stock-reason summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  list-style: none;
+  padding-top: 10px;
+}
+
+.debug-stock-reason summary::-webkit-details-marker {
+  display: none;
+}
+
+.debug-stock-reason summary::before {
+  content: "▸";
+  display: inline-block;
+  margin-right: 6px;
+  transition: transform 0.18s ease;
+}
+
+.debug-stock-reason[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.debug-stock-reason p {
+  margin: 10px 0 0;
+  color: #dbeafe;
+  line-height: 1.65;
+  font-size: 0.86rem;
 }
 
 .debug-finance-page {
