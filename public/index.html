@@ -140,6 +140,45 @@
           </article>
         </section>
 
+        <section class="card holder-distribution-card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">Share Structure</p>
+              <h2>籌碼分布</h2>
+            </div>
+            <span id="holderDistStatus" class="muted">--</span>
+          </div>
+
+          <div class="holder-layout">
+            <div class="holder-chart-wrap">
+              <canvas id="holderDistChart"></canvas>
+            </div>
+
+            <div>
+              <div id="holderDistSummary" class="holder-summary">
+                選擇股票後顯示籌碼分布。
+              </div>
+
+              <div class="mini-table-wrap">
+                <table class="mini-table">
+                  <thead>
+                    <tr>
+                      <th>類型</th>
+                      <th>持股</th>
+                      <th>比例</th>
+                    </tr>
+                  </thead>
+                  <tbody id="holderDistRows">
+                    <tr>
+                      <td colspan="3">尚無資料</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section class="two-column">
           <article class="card">
             <h3>融資上市資訊</h3>

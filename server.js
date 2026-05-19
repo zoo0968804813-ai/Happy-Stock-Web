@@ -505,6 +505,156 @@ app.get('/api/stocks/:symbol', async (req, res) => {
   }
 });
 
+app.get('/api/stocks/:symbol/holders', async (req, res) => {
+  const symbol = String(req.params.symbol || '').trim().toUpperCase();
+
+  if (!/^[A-Z0-9_]{1,12}$/.test(symbol)) {
+    return res.status(400).json({ error: 'Invalid symbol' });
+  }
+
+  try {
+    const stockResult = await pool.query(`
+      SELECT
+        symbol,
+        name,
+        price,
+        total_shares
+      FROM stocks
+      WHERE symbol = $1
+      LIMIT 1;
+    `, [symbol]);
+
+    if (!stockResult.rows.length) {
+      return res.status(404).json({ error: 'Stock not found' });
+    }
+
+    const stock = stockResult.rows[0];
+    const price = Number(stock.price || 0);
+    const totalShares = Number(stock.total_shares || 0);
+
+    const playersResult = await pool.query(`
+      SELECT
+        user_id,
+        username,
+        amount,
+        avg_price,
+        (amount * $2::numeric) AS market_value
+      FROM stock_holdings
+      WHERE symbol = $1
+        AND amount > 0
+      ORDER BY amount DESC
+      LIMIT 10;
+    `, [symbol, price]);
+
+    const playerTotalResult = await pool.query(`
+      SELECT
+        COALESCE(SUM(amount), 0) AS player_shares
+      FROM stock_holdings
+      WHERE symbol = $1
+        AND amount > 0;
+    `, [symbol]);
+
+    const marketResult = await pool.query(`
+      SELECT
+        holder_type,
+        shares,
+        avg_price,
+        cash_balance,
+        realized_pnl,
+        updated_at
+      FROM stock_market_holders
+      WHERE symbol = $1
+      ORDER BY
+        CASE holder_type
+          WHEN 'FOREIGN' THEN 1
+          WHEN 'TRUST' THEN 2
+          WHEN 'DEALER' THEN 3
+          WHEN 'MAIN' THEN 4
+          WHEN 'RETAIL_POOL' THEN 5
+          WHEN 'TREASURY' THEN 6
+          ELSE 99
+        END;
+    `, [symbol]);
+
+    const marketTotalResult = await pool.query(`
+      SELECT
+        COALESCE(SUM(shares), 0) AS market_shares
+      FROM stock_market_holders
+      WHERE symbol = $1;
+    `, [symbol]);
+
+    const playerShares = Number(playerTotalResult.rows[0]?.player_shares || 0);
+    const marketShares = Number(marketTotalResult.rows[0]?.market_shares || 0);
+    const allocatedShares = playerShares + marketShares;
+    const unallocatedShares = Math.max(totalShares - allocatedShares, 0);
+    const overAllocatedShares = Math.max(allocatedShares - totalShares, 0);
+
+    const holderNameMap = {
+      FOREIGN: '外資',
+      TRUST: '投信',
+      DEALER: '自營商',
+      MAIN: '主力',
+      RETAIL_POOL: '散戶市場池',
+      TREASURY: '公司庫藏 / 未釋出',
+    };
+
+    const players = playersResult.rows.map((row) => {
+      const shares = Number(row.amount || 0);
+
+      return {
+        user_id: row.user_id,
+        username: row.username,
+        shares,
+        avg_price: Number(row.avg_price || 0),
+        market_value: Number(row.market_value || 0),
+        holding_pct: totalShares > 0 ? (shares / totalShares) * 100 : 0,
+      };
+    });
+
+    const marketHolders = marketResult.rows.map((row) => {
+      const shares = Number(row.shares || 0);
+
+      return {
+        holder_type: row.holder_type,
+        holder_name: holderNameMap[row.holder_type] || row.holder_type,
+        shares,
+        avg_price: Number(row.avg_price || 0),
+        cash_balance: Number(row.cash_balance || 0),
+        realized_pnl: Number(row.realized_pnl || 0),
+        holding_pct: totalShares > 0 ? (shares / totalShares) * 100 : 0,
+        updated_at: row.updated_at,
+      };
+    });
+
+    res.json({
+      stock: {
+        symbol: stock.symbol,
+        name: stock.name,
+        price,
+        total_shares: totalShares,
+      },
+      summary: {
+        total_shares: totalShares,
+        player_shares: playerShares,
+        market_shares: marketShares,
+        allocated_shares: allocatedShares,
+        unallocated_shares: unallocatedShares,
+        over_allocated_shares: overAllocatedShares,
+        player_pct: totalShares > 0 ? (playerShares / totalShares) * 100 : 0,
+        market_pct: totalShares > 0 ? (marketShares / totalShares) * 100 : 0,
+        allocated_pct: totalShares > 0 ? (allocatedShares / totalShares) * 100 : 0,
+        is_valid: overAllocatedShares <= 0,
+      },
+      players,
+      market_holders: marketHolders,
+      updated_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('GET /api/stocks/:symbol/holders failed:', err);
+    res.status(500).json({ error: 'Failed to load holder distribution' });
+  }
+});
+
 app.get('/api/stocks/:symbol/intraday', async (req, res) => {
   const symbol = safeSymbol(req.params.symbol);
 

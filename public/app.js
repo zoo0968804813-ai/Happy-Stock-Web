@@ -7,6 +7,7 @@ const state = {
   compareSymbols: new Set(),
   intradayChart: null,
   compareChart: null,
+  holderDistChart: null,
   currentChart: 'intraday',
 };
 
@@ -14,6 +15,19 @@ const $ = (id) => document.getElementById(id);
 
 function fmtInt(value) {
   return Math.round(Number(value || 0)).toLocaleString('zh-TW');
+}
+
+function fmtShares(n) {
+  const value = Number(n || 0);
+
+  if (value >= 100000000) return `${(value / 100000000).toFixed(2)}億股`;
+  if (value >= 10000) return `${(value / 10000).toFixed(2)}萬股`;
+
+  return `${Math.round(value).toLocaleString('zh-TW')}股`;
+}
+
+function fmtHolderPct(n) {
+  return `${Number(n || 0).toFixed(4)}%`;
 }
 
 function fmtPrice(value) {
@@ -59,6 +73,34 @@ async function loadConfig() {
   } catch (_) {}
 }
 
+async function loadHolderDistribution(symbol) {
+  const statusEl = document.getElementById('holderDistStatus');
+  const summaryEl = document.getElementById('holderDistSummary');
+  const rowsEl = document.getElementById('holderDistRows');
+
+  if (!symbol) return;
+
+  try {
+    if (statusEl) statusEl.textContent = '讀取中...';
+
+    const res = await fetch(`/api/stocks/${encodeURIComponent(symbol)}/holders`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const data = await res.json();
+    renderHolderDistribution(data);
+
+    if (statusEl) statusEl.textContent = '已更新';
+  } catch (err) {
+    console.error('loadHolderDistribution failed:', err);
+
+    if (statusEl) statusEl.textContent = '讀取失敗';
+    if (summaryEl) summaryEl.textContent = '籌碼分布讀取失敗，請稍後再試。';
+    if (rowsEl) {
+      rowsEl.innerHTML = '<tr><td colspan="3">讀取失敗</td></tr>';
+    }
+  }
+}
+
 async function loadMarket() {
   const data = await fetchJson('/api/market');
   state.stocks = data.stocks || [];
@@ -93,6 +135,121 @@ function renderSummary(summary) {
     <span class="strong-weak-line strong-line">${strongest}</span>
     <span class="strong-weak-line weak-line">${weakest}</span>
   `;
+}
+
+function renderHolderDistribution(data) {
+  const summaryEl = document.getElementById('holderDistSummary');
+  const rowsEl = document.getElementById('holderDistRows');
+  const canvas = document.getElementById('holderDistChart');
+
+  if (!data || !data.summary) return;
+
+  const summary = data.summary;
+  const marketHolders = Array.isArray(data.market_holders) ? data.market_holders : [];
+  const players = Array.isArray(data.players) ? data.players : [];
+
+  const rows = [];
+
+  if (Number(summary.player_shares || 0) > 0) {
+    rows.push({
+      name: '玩家合計',
+      shares: Number(summary.player_shares || 0),
+      pct: Number(summary.player_pct || 0),
+    });
+  }
+
+  for (const holder of marketHolders) {
+    rows.push({
+      name: holder.holder_name,
+      shares: Number(holder.shares || 0),
+      pct: Number(holder.holding_pct || 0),
+    });
+  }
+
+  if (Number(summary.unallocated_shares || 0) > 0) {
+    rows.push({
+      name: '未分配',
+      shares: Number(summary.unallocated_shares || 0),
+      pct: data.stock.total_shares > 0
+        ? (Number(summary.unallocated_shares || 0) / Number(data.stock.total_shares || 1)) * 100
+        : 0,
+    });
+  }
+
+  if (summaryEl) {
+    summaryEl.innerHTML = `
+      <div class="holder-summary-grid">
+        <div>
+          <span>總發行股數</span>
+          <strong>${fmtShares(summary.total_shares)}</strong>
+        </div>
+        <div>
+          <span>玩家持股</span>
+          <strong>${fmtShares(summary.player_shares)}｜${fmtHolderPct(summary.player_pct)}</strong>
+        </div>
+        <div>
+          <span>市場池持股</span>
+          <strong>${fmtShares(summary.market_shares)}｜${fmtHolderPct(summary.market_pct)}</strong>
+        </div>
+        <div>
+          <span>分配狀態</span>
+          <strong class="${summary.is_valid ? 'ok-text' : 'bad-text'}">
+            ${summary.is_valid ? '正常' : `超額 ${fmtShares(summary.over_allocated_shares)}`}
+          </strong>
+        </div>
+      </div>
+    `;
+  }
+
+  if (rowsEl) {
+    rowsEl.innerHTML = rows.length
+      ? rows.map((row) => `
+        <tr>
+          <td>${row.name}</td>
+          <td>${fmtShares(row.shares)}</td>
+          <td>${fmtHolderPct(row.pct)}</td>
+        </tr>
+      `).join('')
+      : '<tr><td colspan="3">尚無籌碼資料</td></tr>';
+  }
+
+  if (canvas && window.Chart) {
+    const chartRows = rows.filter((row) => row.shares > 0);
+
+    if (state.holderDistChart) {
+      state.holderDistChart.destroy();
+      state.holderDistChart = null;
+    }
+
+    state.holderDistChart = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels: chartRows.map((row) => row.name),
+        datasets: [{
+          data: chartRows.map((row) => row.shares),
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+          },
+          tooltip: {
+            callbacks: {
+              label(context) {
+                const value = Number(context.raw || 0);
+                const total = chartRows.reduce((sum, row) => sum + row.shares, 0);
+                const pct = total > 0 ? (value / total) * 100 : 0;
+                return `${context.label}: ${fmtShares(value)}｜${fmtHolderPct(pct)}`;
+              },
+            },
+          },
+        },
+      },
+    });
+  }
 }
 
 function getFilteredStocks() {
@@ -191,9 +348,11 @@ async function loadStockDetail(symbol) {
   state.selectedStock = data.stock;
 
   renderStockDetail(data);
+
   await Promise.all([
     loadIntradayChart(symbol),
     loadCandles(symbol),
+    loadHolderDistribution(symbol),
     loadNews(),
     loadListings(),
   ]);
