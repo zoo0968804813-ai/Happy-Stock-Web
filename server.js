@@ -577,6 +577,7 @@ app.get('/api/stocks/:symbol', async (req, res) => {
 
     const flowRes = await pool.query(`
       SELECT
+        date_key,
         foreign_net_value::float,
         trust_net_value::float,
         dealer_net_value::float,
@@ -585,7 +586,7 @@ app.get('/api/stocks/:symbol', async (req, res) => {
         updated_at
       FROM stock_institution_flows
       WHERE symbol = $1
-        AND date_key = ${todayTaipeiSqlExpr()}
+      ORDER BY updated_at DESC
       LIMIT 1;
     `, [symbol]);
 
