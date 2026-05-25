@@ -815,6 +815,64 @@ app.get('/api/stocks/:symbol/holders', async (req, res) => {
   }
 });
 
+app.get('/api/debug/flow-check/:symbol', requireDebugAuth, async (req, res) => {
+  const symbol = safeSymbol(req.params.symbol);
+
+  try {
+    const flowRows = await pool.query(`
+      SELECT *
+      FROM stock_institution_flows
+      WHERE symbol = $1
+      ORDER BY date_key DESC
+      LIMIT 20;
+    `, [symbol]);
+
+    const marketHolderRows = await pool.query(`
+      SELECT *
+      FROM stock_market_holders
+      WHERE symbol = $1
+      ORDER BY
+        CASE holder_type
+          WHEN 'FOREIGN' THEN 1
+          WHEN 'TRUST' THEN 2
+          WHEN 'DEALER' THEN 3
+          WHEN 'MAIN' THEN 4
+          WHEN 'RETAIL_POOL' THEN 5
+          WHEN 'TREASURY' THEN 6
+          ELSE 99
+        END;
+    `, [symbol]);
+
+    const todayTradeRows = await pool.query(`
+      SELECT
+        side,
+        COUNT(*)::int AS trade_count,
+        COALESCE(SUM(amount), 0)::bigint AS amount,
+        COALESCE(SUM(total_value), 0)::float AS total_value
+      FROM stock_trades
+      WHERE symbol = $1
+        AND TO_CHAR(created_at AT TIME ZONE 'Asia/Taipei', 'YYYY-MM-DD') = ${todayTaipeiSqlExpr()}
+      GROUP BY side
+      ORDER BY side ASC;
+    `, [symbol]);
+
+    res.json({
+      symbol,
+      checkedAt: new Date().toISOString(),
+      stock_institution_flows: flowRows.rows,
+      stock_market_holders: marketHolderRows.rows,
+      today_trades_by_side: todayTradeRows.rows,
+      conclusionHint: {
+        stock_institution_flows: '網站目前法人籌碼區主要讀這張表。如果這裡是空的或都是 0，首頁法人籌碼就會顯示 +0。',
+        stock_market_holders: '這張表比較像法人 / 主力 / 散戶目前持股池。如果 Discord BOT 顯示的是法人持有狀態，很可能要改讀這張表。',
+        today_trades_by_side: '這裡可以確認今天玩家買入、賣出、做空、平倉的成交金額。'
+      }
+    });
+  } catch (err) {
+    handleError(res, 'GET /api/debug/flow-check/:symbol', err);
+  }
+});
+
 app.get('/api/stocks/:symbol/intraday', async (req, res) => {
   const symbol = safeSymbol(req.params.symbol);
 
